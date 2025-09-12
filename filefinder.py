@@ -10,10 +10,11 @@ import sys
 shell = win32com.client.Dispatch("WScript.Shell") #access window shell
 desktop = shell.SpecialFolders("Desktop") #access windows desktop file(not oneDrive)
 documents = shell.SpecialFolders("MyDocuments")
+recycle = shell.SpecialFolders("RecycleBin")
 
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QHBoxLayout, QVBoxLayout,
-    QLineEdit, QPushButton, QListWidget, QLabel, QListWidgetItem
+    QLineEdit, QPushButton, QListWidget, QLabel, QListWidgetItem, QDialog
 )
 from PyQt5.QtCore import QThread, pyqtSignal, Qt
 #QApplicaiton -> main app manager
@@ -35,7 +36,7 @@ class FileFinderApp(QWidget):
         self.fileData = []
         
         self.setWindowTitle("File Finder") #set title
-        self.setFixedSize(700,400) #set size of window box
+        self.setFixedSize(750,500) #set size of window box
         layout = QVBoxLayout() #Create a vertical layout
         self.label = QLabel("Enter filename (or part of it):")  #add a label to layout
         layout.addWidget(self.label)
@@ -52,9 +53,8 @@ class FileFinderApp(QWidget):
         user = os.path.join(os.path.expanduser("~"))
         program_files     = "C:\\Program Files"
         program_files_x86 = "C:\\Program Files (x86)"
+        self.button_layout_1 = QHBoxLayout()
 
-        self.buttons = QHBoxLayout()
-       
         self.desktopbtn = QPushButton("Desktop")
         self.desktopbtn.clicked.connect(lambda: self.perform_search(desktop))
 
@@ -76,18 +76,18 @@ class FileFinderApp(QWidget):
         self.userbtn = QPushButton("Users")
         self.userbtn.clicked.connect(lambda: self.perform_search(user))
 
-        
-        self.buttons.addWidget(self.desktopbtn)     
-        self.buttons.addWidget(self.docBtn)
-        self.buttons.addWidget(self.downBtn)
-        self.buttons.addWidget(self.PFbtn)
-        self.buttons.addWidget(self.PFx86btn)
-        self.buttons.addWidget(self.tempbtn)
-        self.buttons.addWidget(self.userbtn) 
-        self.button = QPushButton("Search Entire Drive") #Add button 
-        self.button.clicked.connect(lambda: self.perform_search("C:\\")) #add function for when button is clicked 
-        layout.addLayout(self.buttons)
-        layout.addWidget(self.button)
+        self.button_layout_1.addWidget(self.desktopbtn)     
+        self.button_layout_1.addWidget(self.docBtn)
+        self.button_layout_1.addWidget(self.downBtn)
+        self.button_layout_1.addWidget(self.PFbtn)
+        self.button_layout_1.addWidget(self.PFx86btn)
+        self.button_layout_1.addWidget(self.tempbtn)
+        self.button_layout_1.addWidget(self.userbtn) 
+
+        self.searchAllbtn = QPushButton("Search Entire Drive") #Add button 
+        self.searchAllbtn.clicked.connect(lambda: self.perform_search("C:\\")) #add function for when button is clicked 
+        layout.addLayout(self.button_layout_1)
+        layout.addWidget(self.searchAllbtn)
 
         # results list
         self.results = QListWidget() #Add results
@@ -110,9 +110,27 @@ class FileFinderApp(QWidget):
         self.worker.progress.connect(self.update_status)
         self.worker.start()
         
+        
+        self.desktopbtn.setEnabled(False)
+        self.docBtn.setEnabled(False)
+        self.downBtn.setEnabled(False)
+        self.tempbtn.setEnabled(False)
+        self.PFbtn.setEnabled(False)
+        self.PFx86btn.setEnabled(False)
+        self.userbtn.setEnabled(False)
+        self.searchAllbtn.setEnabled(False)
+
         self.results.itemDoubleClicked.connect(self.open_file)   
          
     def display_results(self, matches):
+        self.desktopbtn.setEnabled(True)
+        self.docBtn.setEnabled(True)
+        self.downBtn.setEnabled(True)
+        self.tempbtn.setEnabled(True)
+        self.PFbtn.setEnabled(True)
+        self.PFx86btn.setEnabled(True)
+        self.userbtn.setEnabled(True)
+        self.searchAllbtn.setEnabled(True)
         if matches:
             for m in matches:
                 self.results.addItem(m)
@@ -121,12 +139,12 @@ class FileFinderApp(QWidget):
     
     def update_status(self, message): self.label.setText(message) # reuse label as a "status"
     def open_file(self, item):
-        new_window = OpenFile(item)
+        metadata = item.data(Qt.UserRole)
+        new_window = OpenFile(metadata)
         new_window.show()
         if not hasattr(self, "open_windows"):
             self.open_windows = []
         self.open_windows.append(new_window)  
-
 
 
 
@@ -146,7 +164,7 @@ class OpenFile(QWidget):
         self.setFixedSize(300,300)
         layout = QVBoxLayout() 
         self.list = QListWidget()
-        self.list.addItem(self.file.text())
+        self.list.addItem(self.file["name"])
         layout.addWidget(self.list)
         
         self.openbtn = QPushButton("Open")
@@ -167,29 +185,48 @@ class OpenFile(QWidget):
         
         
     def open_file(self):
-            if os.path.exists(self.file.text()):
-                os.startfile(self.file.text())
-            else:
+        
+        if os.path.exists(self.file["path"]):
+                os.startfile(self.file["path"])
+        else:
                 print("file not opening")
         
     def open_in_folder(self):
-            if os.path.exists(self.file.text()):
-                subprocess.Popen(["explorer", "/select,", self.file.text()]) #open in folder
+            if os.path.exists(self.file["path"]):
+                subprocess.Popen(["explorer", "/select,", self.file["path"]]) #open in folder
             else:
                 print("file not opening")
                 
     def copy_to(self):
-        if os.path.exists(self.file):
+        if os.path.exists(self.file["path"]):
             try:
-                shutil.copy2(self.file, desktop)
+                shutil.copy2(self.file["path"], desktop)
+                new_window = UpdateUser("Copy to Folder", "Copied to Desktop Successfully")
+                new_window.show()
+                if not hasattr(self, "open_windows"):
+                    self.open_windows = []
+                self.open_windows.append(new_window)  
+
             except Exception as e:
                 print(f"Error: {e}")
+                new_window = UpdateUser("Copy to Folder", "Error: Could not copy to desktop :( ")
+
         
 
 
 
 
 
+
+class UpdateUser(QDialog):
+    def __init__(self, title, update):
+        super().__init__()
+        self.setWindowTitle(title) #set title
+        layout = QVBoxLayout() 
+        self.label  = QLabel(f"{update}")
+        
+        layout.addWidget(self.label)
+        self.setLayout(layout)
 
 
 
