@@ -25,7 +25,7 @@ Later version will include new features
 
 ### Download
 
-Current Downloadable versions can be downloaded in the release file. 
+Current Downloadable versions can be downloaded in the dist file. 
 
 
 
