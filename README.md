@@ -19,7 +19,6 @@ Later version will include new features
 
 
 
-https://www.redfin.ca/on/ajax/65-Styles-Cres-L1Z-0A8/home/150274784
 
 
 <!-- GETTING STARTED -->
