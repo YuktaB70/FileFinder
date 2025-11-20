@@ -19,7 +19,6 @@ Later version will include new features
  - Rule-based automations
  - Drive usage visualization
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 
@@ -33,7 +32,6 @@ Current Downloadable versions can be downloaded in the dist file.
 
 
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 
