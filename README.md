@@ -15,9 +15,9 @@ SystemFlow is a automation/organization tool for your files. SystemFlow can help
   
 
 Later version will include new features
--Smart Cleanup tools
--Rule-based automations
--Drive usage visualization
+ - Smart Cleanup tools
+ - Rule-based automations
+ - Drive usage visualization
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -26,6 +26,10 @@ Later version will include new features
 ### Download
 
 Current Downloadable versions can be downloaded in the dist file. 
+
+
+
+### Update Log
 
 
 
