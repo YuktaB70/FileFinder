@@ -29,6 +29,8 @@ Current Downloadable versions can be downloaded in the dist file.
 
 
 ### Update Log
+2025-11-20
+ - Updated UI
 
 
 
