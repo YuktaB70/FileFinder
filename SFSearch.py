@@ -99,7 +99,7 @@ class SFSearch(QWidget):
             self.results.addItem("Please enter a search term")
             return
         
-        self.worker = SearchWorker(keyword, base_path)
+        self.worker = SearchWorker(keyword, base_path, "search by keyword")
         self.worker.results_found.connect(self.display_results)
         self.worker.progress.connect(self.update_status)
         self.worker.start()
@@ -131,7 +131,7 @@ class SFSearch(QWidget):
         else: 
             self.results.addItem("No matching file found")
     
-    def update_status(self, message): self.label.setText(message) # reuse label as a "status"
+    def update_status(self, message): self.label.setText(message) 
     def open_file(self, item):
         metadata = item.data(Qt.UserRole)
         new_window = OpenFile(metadata)
